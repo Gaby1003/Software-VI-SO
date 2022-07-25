@@ -28,35 +28,79 @@ public class EditProcess extends JDialog {
 
     private void initComponents(ActionListener listener, ArrayList<Object[]>datas){
         panel = new JPanel();
-        panel.setBackground(Color.white);
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBorder(new EmptyBorder(0,20,0,20));
+        panel.setBackground(Constant.COLOR_GREEN);
         initialPanel(listener, datas);
+        panel.setBorder(new EmptyBorder(0,20,0,20));
         add(panel, BorderLayout.CENTER);
-        panel.repaint();
-        panel.updateUI();
-        repaint();
     }
 
     public void initialPanel(ActionListener listener, ArrayList<Object[]> datas) {
         panel.removeAll();
-        addDataProcess(listener, datas);
+        optionProcess(listener, datas);
         panel.setBackground(Color.WHITE);
         panel.repaint();
         panel.updateUI();
         repaint();
     }
 
-    public void addDataProcess(ActionListener listener, ArrayList<Object[]> datas) {
+    public void optionProcess(ActionListener listener, ArrayList<Object[]>datas){
+        panel.removeAll();
+
+        JPanel panelAux = new JPanel(new GridLayout(4, 1, 20, 20));
+        panelAux.setOpaque(false);
+        panelAux.setBorder(new EmptyBorder(150, 0, 0, 0));
+
+        JLabel nameProcess = new JLabel("Nombre del proceso");
+        nameProcess.setBorder(new EmptyBorder(0, 40, 0, 40));
+
+        idProcessC = new JComboBox<String>();
+        for (Object[] objects : datas) {
+            idProcessC.addItem(objects[0]);
+        }
+
+        idProcessC.setBorder(new EmptyBorder(0, 40, 0, 40));
+
+        UIManager.put("ComboBox.background",new javax.swing.plaf.ColorUIResource(Color.WHITE));
+
+        panelAux.add(nameProcess);
+        panelAux.add(idProcessC);
+        panelAux.add(addButtonEditProcess(listener));
+        panel.add(panelAux);
+
+        panel.repaint();
+        panel.updateUI();
+        repaint();
+    }
+
+    public JPanel addButtonEditProcess(ActionListener listener) {
+        JPanel panel = new JPanel();
+
+        panel.setOpaque(false);
+
+        JButtonInformation selectProcess = new JButtonInformation(10, 10, "Seleccionar", Constant.COLOR_GREEN,
+                Color.white, Constant.FONT_BUTTONS);
+
+        selectProcess.setActionCommand(Events.ENTER.toString());
+        selectProcess.addActionListener(listener);
+
+        JButtonInformation exit = new JButtonInformation(10, 10, "Salir", Constant.COLOR_GREEN, Color.white,
+                Constant.FONT_BUTTONS);
+        exit.setActionCommand(Events.EXIT_EDIT_PROCESS.toString());
+        exit.addActionListener(listener);
+
+        panel.add(selectProcess);
+        panel.add(exit);
+        return panel;
+    }
+
+    public void addDataProcess(ActionListener listener, ArrayList<Object[]> datas,
+                               Object[] infoProcess) {
         panel.removeAll();
 
         JPanel panel2 = new JPanel(new GridLayout(6, 2, 40, 10));
         panel2.setOpaque(false);
         panel2.setBorder(new EmptyBorder(50, 10, 0, 10));
 
-        JLabel nameProcess = new JLabel("Nombre del proceso");
-        nameProcess.setBorder(new EmptyBorder(10, 5, 10, 5));
-        nameProcess.setFont(Constant.FONT_NUNITO_TEXT);
 
         idProcessC = new JComboBox<String>();
         for (Object[] objects : datas) {
@@ -67,17 +111,21 @@ public class EditProcess extends JDialog {
         nameNewProcess.setBorder(new EmptyBorder(10, 5, 10, 5));
         nameNewProcess.setFont(Constant.FONT_NUNITO_TEXT);
         newNameProcess = new JTextField();
+        newNameProcess.setText(String.valueOf(infoProcess[0]));
 
 
         JLabel sizeProcess = new JLabel("Tama\u00f1o del proceso");
         sizeProcess.setBorder(new EmptyBorder(10, 5, 10, 5));
         sizeProcess.setFont(Constant.FONT_NUNITO_TEXT);
         jSize = new JTextField();
+        jSize.setText(String.valueOf(infoProcess[2]));
 
         JLabel timeProcess = new JLabel("Tiempo del proceso");
         timeProcess.setBorder(new EmptyBorder(10, 5, 10, 5));
         timeProcess.setFont(Constant.FONT_NUNITO_TEXT);
         jTime = new JTextField();
+        jTime.setText(String.valueOf(infoProcess[1]));
+
 
         JLabel newBlockProcess = new JLabel("Bloqueado");
         newBlockProcess.setFont(Constant.FONT_NUNITO_TEXT);
@@ -86,10 +134,9 @@ public class EditProcess extends JDialog {
         blockJProcess = new JComboBox<String>();
         blockJProcess.addItem("No");
         blockJProcess.addItem("Si");
+        blockJProcess.setSelectedItem(infoProcess[3].equals(true) ? "Si" : "No");
         UIManager.put("ComboBox.background",new javax.swing.plaf.ColorUIResource(Color.WHITE));
 
-        panel2.add(nameProcess);
-        panel2.add(idProcessC);
         panel2.add(nameNewProcess);
         panel2.add(newNameProcess);
         panel2.add(sizeProcess);
@@ -144,6 +191,11 @@ public class EditProcess extends JDialog {
             return newNameProcess.getText();
         }
     }
+
+    public String getNameInfo(){
+        return idProcessC.getSelectedItem().toString();
+    }
+
 
     public String getSizeData() throws EmptyTextFieldException, TimeInNumber, PossitiveValues{
         if(jSize.getText().isEmpty()){

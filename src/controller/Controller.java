@@ -16,6 +16,7 @@ public class Controller implements ActionListener {
     private EditProcess editProcess;
     private DeleteProcess deleteProcess;
     private Manager manager;
+    private String name;
 
     public  Controller(){
         mainFrame = new MainFrame(this);
@@ -60,11 +61,21 @@ public class Controller implements ActionListener {
             case EXIT_DElETE_PROCESS:
                 deleteProcess.dispose();
                 break;
+            case ENTER:
+                showEditInformation();
+                break;
             case EXIT:
                 System.exit(0);
                 break;
         }
     }
+
+    private void showEditInformation() {
+        name = editProcess.getNameInfo();
+        Object[] datas = manager.findProcess(editProcess.getNameInfo()).toObjectVector();
+        editProcess.addDataProcess(this, manager.returnList(manager.getReadyList()), datas);
+    }
+
     private void showCreateProcess() {
         createProcess = new CreateProcess(this);
     }
@@ -130,7 +141,7 @@ public class Controller implements ActionListener {
     private void editProcess() {
         try {
             Object[] datas = editProcess.getProcessData();
-            manager.editProcess((String)datas[0], (String)datas[1],Integer.valueOf((String) datas[2]),
+            manager.editProcess(name, (String)datas[1],Integer.valueOf((String) datas[2]),
                     Integer.valueOf((String) datas[3]),datas[4].equals("Si") ? true : false);
         } catch (NumberFormatException | EmptyTextFieldException | TimeInNumber | PossitiveValues | RepeatedProcess e) {
             exception(e.getMessage());

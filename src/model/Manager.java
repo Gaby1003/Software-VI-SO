@@ -66,13 +66,19 @@ public class Manager {
     public void editProcess(String name, String newName, long time, long size, boolean blocked) throws RepeatedProcess {
         for (int i = 0; i < readyList.size(); i++) {
             if(readyList.get(i).getName().equals(name)){
-                if(validateNameProcess(newName)){
-                    readyList.get(i).setName(newName);
-                    readyList.get(i).setTime(time);
-                    readyList.get(i).setSize(size);
-                    readyList.get(i).setBlocked(blocked);
-                }else {
-                    throw new RepeatedProcess();
+                if(name.equals(newName)){
+                        readyList.get(i).setTime(time);
+                        readyList.get(i).setSize(size);
+                        readyList.get(i).setBlocked(blocked);
+                }else{
+                    if(validateNameProcess(newName)){
+                        readyList.get(i).setName(newName);
+                        readyList.get(i).setTime(time);
+                        readyList.get(i).setSize(size);
+                        readyList.get(i).setBlocked(blocked);
+                    }else {
+                        throw new RepeatedProcess();
+                    }
                 }
             }
         }
@@ -94,6 +100,15 @@ public class Manager {
             }
         }
         return -1;
+    }
+
+    public Process findProcess(String name) {
+        for (int i = 0; i < readyList.size(); i++) {
+            if (readyList.get(i).getName().equals(name)) {
+                return readyList.get(i);
+            }
+        }
+        return null;
     }
 
     public ArrayList<Process> getListByPartition(String namePartition, ArrayList<Process> array){
