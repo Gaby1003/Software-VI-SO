@@ -86,7 +86,6 @@ public class AddPartitionReports extends JPanel {
 
     public void addRows(ArrayList<Object[]> list, DefaultTableModel element) {
         for(Object[] data : list) {
-           data[3] = (data[3].equals(true)) ? "Bloqueado" : "Sin bloqueo";
             element.addRow(data);
         }
     }

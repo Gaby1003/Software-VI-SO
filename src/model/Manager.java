@@ -20,7 +20,8 @@ public class Manager {
     private ArrayList<Process> blockList; //Bloquear
     private ArrayList<Process> blockedList; //Bloqueado
     private ArrayList<Process> outputList; //Salida
-    private ArrayList<Partition> newPartition; //Salida
+    private ArrayList<Partition> newPartition; //Nuevas Particiones
+    private ArrayList<Partition> initPartitions; //Salida
     private ArrayList<Process> timeList; //Listos
 
     public Manager() {
@@ -40,6 +41,7 @@ public class Manager {
         outputList = new ArrayList<Process>();
         newPartition = new ArrayList<Partition>();
         partitionHistoryList = new ArrayList<Partition>();
+        initPartitions = new ArrayList<Partition>();
     }
 
     public void addNewPartition(String name, long size, long time) throws RepeatedPartition {
@@ -61,13 +63,17 @@ public class Manager {
         }
     }
 
-    public void editProcess(String name, String newName, long time, long size, boolean blocked){
+    public void editProcess(String name, String newName, long time, long size, boolean blocked) throws RepeatedProcess {
         for (int i = 0; i < readyList.size(); i++) {
             if(readyList.get(i).getName().equals(name)){
-                readyList.get(i).setName(newName);
-                readyList.get(i).setTime(time);
-                readyList.get(i).setSize(size);
-                readyList.get(i).setBlocked(blocked);
+                if(validateNameProcess(newName)){
+                    readyList.get(i).setName(newName);
+                    readyList.get(i).setTime(time);
+                    readyList.get(i).setSize(size);
+                    readyList.get(i).setBlocked(blocked);
+                }else {
+                    throw new RepeatedProcess();
+                }
             }
         }
     }
@@ -125,6 +131,7 @@ public class Manager {
         for (int i = 0; i < readyList.size(); i++) {
             Partition partition = new Partition("PAR"+(i+1), readyList.get(i).getSize(),
                     readyList.get(i).getTime());
+            initPartitions.add(partition);
             addNewPartition(partition.getName(), partition.getSize(), partition.getTime());
             readyList.get(i).setNamePartition(partition.getName());
         }
@@ -160,6 +167,7 @@ public class Manager {
 
     private void isExpirationTime(Process process) throws RepeatedPartition {
         if(process.getTime() > 0) {
+            System.out.println("Expiration");
             isBlocked(process);
             readyList.add(process);
         }else {
@@ -199,6 +207,7 @@ public class Manager {
 
     private void isBlocked(Process process) {
         if(process.isBlocked()) {
+            System.out.println("IN BLOCKED");
             blockList.add(process);
             blockedList.add(process);
             wakeUpList.add(process);
@@ -347,6 +356,14 @@ public class Manager {
 
     public void setBlockedList(ArrayList<Process> blockedList) {
         this.blockedList = blockedList;
+    }
+
+    public ArrayList<Partition> getInitPartitions() {
+        return initPartitions;
+    }
+
+    public void setInitPartitions(ArrayList<Partition> initPartitions) {
+        this.initPartitions = initPartitions;
     }
 
     public ArrayList<Process> getOutputList() {

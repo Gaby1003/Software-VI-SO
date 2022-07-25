@@ -67,7 +67,7 @@ public class AddListProcessPanel extends JPanel{
 
 		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 		element = new DefaultTableModel();
-		element.setColumnIdentifiers(Constant.HEADER_lIST_PARTITIONS);
+		element.setColumnIdentifiers(Constant.HEADER);
 		jtElement = new JTable();
 		jtElement.setModel(element);
 		jtElement.setFont(Constant.FONT_NUNITO_TABLE);
@@ -83,7 +83,7 @@ public class AddListProcessPanel extends JPanel{
 
 	public void addRows(ArrayList<Object[]> list, DefaultTableModel element) {
 		for(Object[] data : list) {
-		//	data[3] = (data[3].equals(true)) ? "Bloqueado" : "Sin bloqueo";
+			data[3] = (data[3].equals(true)) ? "Bloqueado" : "Sin bloqueo";
 			element.addRow(data);
 		}
 	}

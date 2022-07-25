@@ -92,24 +92,24 @@ public class Controller implements ActionListener {
       try {
           manager.makeTransition();
           mainFrame.cleanPanel();
-          for (int i = 0; i < manager.getPartitionHistoryList().size(); i++) {
-              mainFrame.initSimulationPanel(this, manager.getPartitionList(),
-                      manager.returnList(manager.getListByPartition(manager.getPartitionHistoryList().get(i).getName(),
+          for (int i = 0; i < manager.getInitPartitions().size(); i++) {
+              mainFrame.initSimulationPanel(this, manager.getInitPartitions(),
+                      manager.returnList(manager.getListByPartition(manager.getInitPartitions().get(i).getName(),
                               manager.getReadyList())),
-                      manager.returnList(manager.getListByPartition(manager.getPartitionHistoryList().get(i).getName(),
+                      manager.returnList(manager.getListByPartition(manager.getInitPartitions().get(i).getName(),
                               manager.getDispatchList())),
-                      manager.returnList(manager.getListByPartition(manager.getPartitionHistoryList().get(i).getName(),
+                      manager.returnList(manager.getListByPartition(manager.getInitPartitions().get(i).getName(),
                               manager.getExpirationTimeList())),
-                      manager.returnList(manager.getListByPartition(manager.getPartitionHistoryList().get(i).getName(),
+                      manager.returnList(manager.getListByPartition(manager.getInitPartitions().get(i).getName(),
                               manager.getInExecutionList())),
-                      manager.returnList(manager.getListByPartition(manager.getPartitionHistoryList().get(i).getName(),
+                      manager.returnList(manager.getListByPartition(manager.getInitPartitions().get(i).getName(),
                               manager.getWakeUpList())),
-                      manager.returnList(manager.getListByPartition(manager.getPartitionHistoryList().get(i).getName(),
+                      manager.returnList(manager.getListByPartition(manager.getInitPartitions().get(i).getName(),
                               manager.getBlockList())),
-                      manager.returnList(manager.getListByPartition(manager.getPartitionHistoryList().get(i).getName(),
+                      manager.returnList(manager.getListByPartition(manager.getInitPartitions().get(i).getName(),
                               manager.getBlockedList())),
-                      manager.returnList(manager.getListByPartition(manager.getPartitionHistoryList().get(i).getName(),
-                              manager.getOutputList())), manager.getPartitionHistoryList().get(i).getName());
+                      manager.returnList(manager.getListByPartition(manager.getInitPartitions().get(i).getName(),
+                              manager.getOutputList())), manager.getInitPartitions().get(i).getName());
           }
          /* mainFrame.addGeneralTab(mainFrame.addTransitionsTable("Lista de Particiones",
                   manager.returnPartitionList(manager.getPartitionList())), "Particiones");*/
@@ -119,6 +119,8 @@ public class Controller implements ActionListener {
                   "Historico de particiones");
           mainFrame.addGeneralTab((manager.returnPartitionList(manager.getNewPartition())), "Lista Nuevas Particiones",
                   "Nuevas particiones");
+          mainFrame.addGeneralTab((manager.returnPartitionList(manager.getPartitionList())), "Última Partición",
+                  "Última partición condensada");
       } catch (RepeatedPartition e) {
           exception(e.getMessage());
       }
@@ -130,7 +132,7 @@ public class Controller implements ActionListener {
             Object[] datas = editProcess.getProcessData();
             manager.editProcess((String)datas[0], (String)datas[1],Integer.valueOf((String) datas[2]),
                     Integer.valueOf((String) datas[3]),datas[4].equals("Si") ? true : false);
-        } catch (NumberFormatException | EmptyTextFieldException | TimeInNumber | PossitiveValues e) {
+        } catch (NumberFormatException | EmptyTextFieldException | TimeInNumber | PossitiveValues | RepeatedProcess e) {
             exception(e.getMessage());
         }
         editProcess.dispose();
