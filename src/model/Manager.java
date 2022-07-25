@@ -53,16 +53,18 @@ public class Manager {
 
     public void deleteProcess(String name){
         for (int i = 0; i < readyList.size(); i++) {
-            if(readyList.get(i).getName().equals(name)){
+            System.out.println(readyList.get(i).getName() + " nOMBRESS " + name);
+            if (readyList.get(i).getName().equals(name)) {
+                System.out.println(i + "posición");
                 readyList.remove(i);
             }
         }
     }
 
-    public void editProcess(String name, long time, long size, boolean blocked){
+    public void editProcess(String name, String newName, long time, long size, boolean blocked){
         for (int i = 0; i < readyList.size(); i++) {
             if(readyList.get(i).getName().equals(name)){
-                readyList.get(i).setName(name);
+                readyList.get(i).setName(newName);
                 readyList.get(i).setTime(time);
                 readyList.get(i).setSize(size);
                 readyList.get(i).setBlocked(blocked);
@@ -213,6 +215,13 @@ public class Manager {
         return listObject;
     }
 
+    public ArrayList<Object[]> returnPartitionList(ArrayList<Partition> partitions){
+        ArrayList<Object[]> listObject = new ArrayList<>();
+        for (Partition process: partitions) {
+            listObject.add(process.toObjectVector());
+        }
+        return listObject;
+    }
     private int getPartitionPosition(int partitionPosition) {
         if(partitionPosition + 1 < partitionList.size()){
             partitionPosition++;

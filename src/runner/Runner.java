@@ -1,15 +1,21 @@
 package runner;
 
+import controller.Controller;
 import exception.RepeatedPartition;
 import exception.RepeatedProcess;
 import model.Manager;
+import view.MainFrame;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 
 public class Runner {
 	
 	public static void main(String[] args) throws RepeatedProcess, RepeatedPartition {
-		//new Controller();
-		Manager manager = new Manager();
+		new Controller();
+
+		/*Manager manager = new Manager();
 		manager.addNewProcess("P1",20,20,true);
 		manager.addNewProcess("P2",30,30,true);
 		manager.addNewProcess("P3",40,40,true);
@@ -27,7 +33,8 @@ public class Runner {
 		System.out.println("-------------------");
 		manager.printPartitionList(manager.getPartitionHistoryList());
 		System.out.println("-------------------");
-		manager.printPartitionList(manager.getNewPartition());
+		manager.printPartitionList(manager.getNewPartition());*/
 	}
+
 }
 
