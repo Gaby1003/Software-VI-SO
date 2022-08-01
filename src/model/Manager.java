@@ -10,8 +10,10 @@ import java.util.Collections;
 public class Manager {
 
     private static final long EXECUTION_TIME = 5;
+    private static final long MEMORY_SIZE = 50;
     private ArrayList<Partition> partitionList;
     private ArrayList<Partition> partitionHistoryList;
+    private ArrayList<String> condensations;
     private ArrayList<Process> readyList; //Listos
     private ArrayList<Process> dispatchList; //Despachar
     private ArrayList<Process> expirationTimeList; //Expiraci�n de tiempo
@@ -42,6 +44,7 @@ public class Manager {
         newPartition = new ArrayList<Partition>();
         partitionHistoryList = new ArrayList<Partition>();
         initPartitions = new ArrayList<Partition>();
+        condensations = new ArrayList<String>();
     }
 
     public void addNewPartition(String name, long size, long time) throws RepeatedPartition {
@@ -55,9 +58,7 @@ public class Manager {
 
     public void deleteProcess(String name){
         for (int i = 0; i < readyList.size(); i++) {
-            System.out.println(readyList.get(i).getName() + " nOMBRESS " + name);
             if (readyList.get(i).getName().equals(name)) {
-                System.out.println(i + "posición");
                 readyList.remove(i);
             }
         }
@@ -143,12 +144,18 @@ public class Manager {
     }
 
     public void addPartitions() throws RepeatedPartition {
+        int size = 0;
         for (int i = 0; i < readyList.size(); i++) {
-            Partition partition = new Partition("PAR"+(i+1), readyList.get(i).getSize(),
-                    readyList.get(i).getTime());
-            initPartitions.add(partition);
-            addNewPartition(partition.getName(), partition.getSize(), partition.getTime());
-            readyList.get(i).setNamePartition(partition.getName());
+            if(size < MEMORY_SIZE){
+                Partition partition = new Partition("PAR-"+(i+1), readyList.get(i).getSize(),
+                        readyList.get(i).getTime());
+                initPartitions.add(partition);
+                addNewPartition(partition.getName(), partition.getSize(), partition.getTime());
+                readyList.get(i).setNamePartition(partition.getName());
+                size += readyList.get(i).getSize();
+            } else{
+                i = readyList.size();
+            }
         }
     }
 
@@ -163,6 +170,17 @@ public class Manager {
         makeCondensation();
     }
 
+    public void makeTransition2() throws RepeatedPartition {
+        addPartitions();
+        for (int i = 0; i < readyList.size(); i++) {
+            Process process = new Process(readyList.get(i).getName(),
+                    readyList.get(i).getTime(), readyList.get(i).getSize(),
+                    readyList.get(i).isBlocked(), readyList.get(i).getNamePartition());
+            validateProcess(process, i);
+        }
+        //makeCondensation();
+    }
+
     private void makeCondensation() throws RepeatedPartition {
         while (partitionList.size() > 1){
             for (int i = 0; i < partitionList.size(); i++) {
@@ -174,15 +192,58 @@ public class Manager {
     public void validateProcess(Process process, int i) throws RepeatedPartition {
         process.setTime(process.getTime() - EXECUTION_TIME < 0 ?
                 0 : process.getTime() - EXECUTION_TIME);
-        partitionList.get(findPartition(process.getNamePartition())).setTime(process.getTime());
-        dispatchList.add(readyList.get(i));
-        inExecutionList.add(process);
-        isExpirationTime(process);
+        if(findPartition(process.getNamePartition()) != -1){
+            System.out.println("WTF " + i + " " + process.getNamePartition());
+            partitionList.get(findPartition(process.getNamePartition())).setTime(process.getTime());
+        }else{
+            assignPartition(i);
+        }
+
+            dispatchList.add(readyList.get(i));
+            process.setNamePartition(readyList.get(i).getNamePartition());
+            inExecutionList.add(process);
+            isExpirationTime(process);
+
+    }
+
+    private void assignPartition(int i){
+        for (int j = 0; j < partitionList.size(); j++) {
+            if(partitionList.get(j).getTime() == 0 &&
+                    partitionList.get(j).getSize() >= readyList.get(i).getSize()){
+                long size = partitionList.get(j).getSize();
+                readyList.get(i).setNamePartition(partitionList.get(j).getName());
+                int consecutive = Integer.parseInt(partitionList.get(partitionList.size() - 1).
+                        getName().split("-")[1].replace(" ", "")) + 1;
+                movePartitions(j + 1);
+                partitionList.remove(j);
+                partitionList.add(j, new Partition( "PAR-" + consecutive,
+                        readyList.get(i).getSize(),readyList.get(i).getTime()));
+                partitionHistoryList.add( new Partition( "PAR-" + consecutive,
+                        readyList.get(i).getSize(),readyList.get(i).getTime()));
+                partitionList.add(j + 1, new Partition( "PAR-" + (consecutive + 1),
+                        size - readyList.get(i).getSize(), 0));
+                partitionHistoryList.add( new Partition( "PAR-" + (consecutive + 1),
+                        size - readyList.get(i).getSize(), 0));
+                j = partitionList.size();
+            }
+        }
+    }
+
+    public void movePartitions(int position) {
+        int i;
+        Partition aux = partitionList.get(position);
+        partitionList.add(null);
+        for (i = partitionList.size() - 1; i > 0; i--) {
+           if(position < i){
+               partitionList.set(i, partitionList.get(i - 1));
+           } else {
+               partitionList.remove(i);
+           }
+        }
     }
 
     private void isExpirationTime(Process process) throws RepeatedPartition {
         if(process.getTime() > 0) {
-            System.out.println("Expiration");
             isBlocked(process);
             readyList.add(process);
         }else {
@@ -193,11 +254,11 @@ public class Manager {
 
     private void evaluatePartitions(String name) throws RepeatedPartition {
         int position = findPartition(name);
-        if(position != 0){
+        if(position > 0){
             if(partitionList.get(position - 1).getTime() <= 0 ){
                 replacePartitions(position, (position - 1));
             }
-        }else if(position < partitionList.size()){
+        }else if(position < partitionList.size() &&  position != -1 ){
             if(partitionList.get(position + 1).getTime() <= 0 ){
                 replacePartitions(position, position + 1);
             }
@@ -207,9 +268,12 @@ public class Manager {
     private void replacePartitions(int position, int position2) throws RepeatedPartition {
         Partition partition = partitionList.get(position);
         Partition partition2 = partitionList.get(position2);
-        addNewPartition(partition.getName() + " - " + partition2.getName(),
+        int consecutive = Integer.parseInt(partitionHistoryList.get(partitionHistoryList.size() - 1).
+                getName().split("-")[1].replace(" ", "")) + 1;
+        condensations.add(partition.getName()  + " + " + partition2.getName() + " = PAR-" + consecutive );
+        addNewPartition("PAR-" + consecutive,
                 partition.getSize() + partition2.getSize(), Long.parseLong("0"));
-        newPartition.add(new Partition(partition.getName() + " - " + partition2.getName(),
+        newPartition.add(new Partition("PAR-" + consecutive,
                 partition.getSize() + partition2.getSize(), Long.parseLong("0")));
         if(position > position2 ){
             partitionList.remove(position);
@@ -222,7 +286,6 @@ public class Manager {
 
     private void isBlocked(Process process) {
         if(process.isBlocked()) {
-            System.out.println("IN BLOCKED");
             blockList.add(process);
             blockedList.add(process);
             wakeUpList.add(process);
@@ -403,5 +466,22 @@ public class Manager {
 
     public void setNewPartition(ArrayList<Partition> newPartition) {
         this.newPartition = newPartition;
+    }
+
+    public static void main(String[] args) throws RepeatedProcess, RepeatedPartition {
+        Manager manager = new Manager();
+        manager.addNewProcess("P11", 5, 11, false);
+        manager.addNewProcess("P15", 7, 15, false);
+        manager.addNewProcess("P18", 8, 18, false);
+        manager.addNewProcess("P6", 3, 6, false);
+        manager.addNewProcess("P9", 4, 9, false);
+        manager.addNewProcess("P13", 6, 13, false);
+        manager.addNewProcess("P20", 2, 20, false);
+
+        manager.makeTransition2();
+        manager.printList(manager.getReadyList());
+        manager.printList(manager.getOutputList());
+        manager.printPartitionList(manager.getPartitionHistoryList());
+
     }
 }
